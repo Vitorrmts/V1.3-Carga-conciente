@@ -6,9 +6,18 @@ class CargaCard extends StatelessWidget {
 
   final Carga carga;
 
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
   const CargaCard({
+
     super.key,
+
     required this.carga,
+
+    required this.onEdit,
+
+    required this.onDelete,
   });
 
   @override
@@ -26,6 +35,7 @@ class CargaCard extends StatelessWidget {
         ),
 
         title: Text(
+
           carga.mes,
 
           style: const TextStyle(
@@ -42,15 +52,44 @@ class CargaCard extends StatelessWidget {
           ),
         ),
 
-        trailing: Text(
+        trailing: Row(
 
-          'R\$ ${carga.valor.toStringAsFixed(2)}',
+          mainAxisSize:
+              MainAxisSize.min,
 
-          style: const TextStyle(
-            color: Colors.green,
-            fontWeight:
-                FontWeight.bold,
-          ),
+          children: [
+
+            Text(
+
+              'R\$ ${carga.valor.toStringAsFixed(2)}',
+
+              style: const TextStyle(
+                color: Colors.green,
+                fontWeight:
+                    FontWeight.bold,
+              ),
+            ),
+
+            IconButton(
+
+              onPressed: onEdit,
+
+              icon: const Icon(
+                Icons.edit,
+                color: Colors.orange,
+              ),
+            ),
+
+            IconButton(
+
+              onPressed: onDelete,
+
+              icon: const Icon(
+                Icons.delete,
+                color: Colors.red,
+              ),
+            ),
+          ],
         ),
       ),
     );
