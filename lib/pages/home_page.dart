@@ -7,7 +7,10 @@ import '../widgets/carga_card.dart';
 import '../widgets/resumo_card.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+
+  const HomePage({
+    super.key,
+  });
 
   @override
   State<HomePage> createState() =>
@@ -59,10 +62,12 @@ class _HomePageState
       mes: mesController.text,
 
       kwh: double.parse(
-          kwhController.text),
+        kwhController.text,
+      ),
 
       valor: double.parse(
-          valorController.text),
+        valorController.text,
+      ),
     );
 
     await DatabaseHelper.instance
@@ -78,13 +83,167 @@ class _HomePageState
         .showSnackBar(
 
       const SnackBar(
-        content:
-            Text('Carga salva!'),
+        content: Text(
+          'Carga salva!',
+        ),
       ),
     );
   }
 
-  Future excluirCarga(int id) async {
+  Future editarCarga(
+      Carga carga) async {
+
+    mesController.text = carga.mes;
+
+    kwhController.text =
+        carga.kwh.toString();
+
+    valorController.text =
+        carga.valor.toString();
+
+    showDialog(
+
+      context: context,
+
+      builder: (_) {
+
+        return AlertDialog(
+
+          backgroundColor:
+              const Color(0xFF1E1E1E),
+
+          title: const Text(
+
+            'Editar carga',
+
+            style: TextStyle(
+              color: Colors.white,
+            ),
+          ),
+
+          content: Column(
+
+            mainAxisSize:
+                MainAxisSize.min,
+
+            children: [
+
+              TextField(
+
+                controller:
+                    mesController,
+
+                style:
+                    const TextStyle(
+                  color:
+                      Colors.white,
+                ),
+
+                decoration:
+                    const InputDecoration(
+                  labelText: 'Mês',
+                ),
+              ),
+
+              const SizedBox(
+                  height: 10),
+
+              TextField(
+
+                controller:
+                    kwhController,
+
+                keyboardType:
+                    TextInputType.number,
+
+                style:
+                    const TextStyle(
+                  color:
+                      Colors.white,
+                ),
+
+                decoration:
+                    const InputDecoration(
+                  labelText:
+                      'kWh',
+                ),
+              ),
+
+              const SizedBox(
+                  height: 10),
+
+              TextField(
+
+                controller:
+                    valorController,
+
+                keyboardType:
+                    TextInputType.number,
+
+                style:
+                    const TextStyle(
+                  color:
+                      Colors.white,
+                ),
+
+                decoration:
+                    const InputDecoration(
+                  labelText:
+                      'Valor',
+                ),
+              ),
+            ],
+          ),
+
+          actions: [
+
+            ElevatedButton(
+
+              onPressed:
+                  () async {
+
+                final novaCarga =
+                    Carga(
+
+                  id: carga.id,
+
+                  mes:
+                      mesController
+                          .text,
+
+                  kwh: double.parse(
+                    kwhController
+                        .text,
+                  ),
+
+                  valor: double.parse(
+                    valorController
+                        .text,
+                  ),
+                );
+
+                await DatabaseHelper
+                    .instance
+                    .updateCarga(
+                        novaCarga);
+
+                carregarCargas();
+
+                Navigator.pop(
+                    context);
+              },
+
+              child: const Text(
+                  'Salvar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future excluirCarga(
+      int id) async {
 
     await DatabaseHelper.instance
         .deleteCarga(id);
@@ -120,9 +279,6 @@ class _HomePageState
         ),
 
         centerTitle: true,
-
-        backgroundColor:
-            Colors.green,
       ),
 
       body: Padding(
@@ -139,36 +295,43 @@ class _HomePageState
               height: 100,
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(
+                height: 10),
 
             const Text(
 
               'Sua recarga, seu controle.',
 
               style: TextStyle(
-                color: Colors.white70,
+                color:
+                    Colors.white70,
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(
+                height: 20),
 
             ResumoCard(
 
-              titulo: 'Total gasto',
+              titulo:
+                  'Total gasto',
 
               valor:
                   'R\$ ${totalValor.toStringAsFixed(2)}',
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(
+                height: 20),
 
             TextField(
 
-              controller: mesController,
+              controller:
+                  mesController,
 
               style:
                   const TextStyle(
-                color: Colors.white,
+                color:
+                    Colors.white,
               ),
 
               decoration:
@@ -177,7 +340,8 @@ class _HomePageState
               ),
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(
+                height: 10),
 
             TextField(
 
@@ -189,7 +353,8 @@ class _HomePageState
 
               style:
                   const TextStyle(
-                color: Colors.white,
+                color:
+                    Colors.white,
               ),
 
               decoration:
@@ -199,7 +364,8 @@ class _HomePageState
               ),
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(
+                height: 10),
 
             TextField(
 
@@ -211,7 +377,8 @@ class _HomePageState
 
               style:
                   const TextStyle(
-                color: Colors.white,
+                color:
+                    Colors.white,
               ),
 
               decoration:
@@ -221,11 +388,13 @@ class _HomePageState
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(
+                height: 20),
 
             SizedBox(
 
-              width: double.infinity,
+              width:
+                  double.infinity,
 
               child: ElevatedButton(
 
@@ -239,12 +408,14 @@ class _HomePageState
                       Colors.green,
                 ),
 
-                child:
-                    const Text('Salvar'),
+                child: const Text(
+                  'Salvar',
+                ),
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(
+                height: 20),
 
             Expanded(
 
@@ -260,25 +431,19 @@ class _HomePageState
                   final carga =
                       cargas[index];
 
-                  return Dismissible(
+                  return CargaCard(
 
-                    key: Key(
-                        carga.id.toString()),
+                    carga: carga,
 
-                    background:
-                        Container(
-                      color: Colors.red,
-                    ),
+                    onEdit: () {
+                      editarCarga(
+                          carga);
+                    },
 
-                    onDismissed: (_) {
-
+                    onDelete: () {
                       excluirCarga(
                           carga.id!);
                     },
-
-                    child: CargaCard(
-                      carga: carga,
-                    ),
                   );
                 },
               ),
