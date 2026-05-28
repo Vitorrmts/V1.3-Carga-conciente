@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../classes/carga.dart';
+import '../database/database_helper.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/carga_card.dart';
 import '../widgets/resumo_card.dart';
@@ -13,23 +14,39 @@ class HomePage extends StatefulWidget {
       _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState
+    extends State<HomePage> {
 
-  final List<Carga> cargas = [];
+  List<Carga> cargas = [];
 
-  final TextEditingController
-      mesController =
-          TextEditingController();
+  final mesController =
+      TextEditingController();
 
-  final TextEditingController
-      kwhController =
-          TextEditingController();
+  final kwhController =
+      TextEditingController();
 
-  final TextEditingController
-      valorController =
-          TextEditingController();
+  final valorController =
+      TextEditingController();
 
-  void adicionarCarga() {
+  @override
+  void initState() {
+    super.initState();
+    carregarCargas();
+  }
+
+  Future carregarCargas() async {
+
+    final data =
+        await DatabaseHelper
+            .instance
+            .getCargas();
+
+    setState(() {
+      cargas = data;
+    });
+  }
+
+  Future adicionarCarga() async {
 
     if (mesController.text.isEmpty ||
         kwhController.text.isEmpty ||
@@ -37,38 +54,42 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
-    setState(() {
+    final carga = Carga(
 
-      cargas.add(
+      mes: mesController.text,
 
-        Carga(
+      kwh: double.parse(
+          kwhController.text),
 
-          mes: mesController.text,
+      valor: double.parse(
+          valorController.text),
+    );
 
-          kwh: double.parse(
-            kwhController.text,
-          ),
+    await DatabaseHelper.instance
+        .insertCarga(carga);
 
-          valor: double.parse(
-            valorController.text,
-          ),
-        ),
-      );
-    });
+    carregarCargas();
+
+    mesController.clear();
+    kwhController.clear();
+    valorController.clear();
 
     ScaffoldMessenger.of(context)
         .showSnackBar(
 
       const SnackBar(
-        content: Text(
-          'Carga adicionada!',
-        ),
+        content:
+            Text('Carga salva!'),
       ),
     );
+  }
 
-    mesController.clear();
-    kwhController.clear();
-    valorController.clear();
+  Future excluirCarga(int id) async {
+
+    await DatabaseHelper.instance
+        .deleteCarga(id);
+
+    carregarCargas();
   }
 
   double get totalValor {
@@ -113,8 +134,6 @@ class _HomePageState extends State<HomePage> {
 
           children: [
 
-            const SizedBox(height: 10),
-
             Image.asset(
               'assets/logo.png',
               height: 100,
@@ -128,7 +147,6 @@ class _HomePageState extends State<HomePage> {
 
               style: TextStyle(
                 color: Colors.white70,
-                fontSize: 16,
               ),
             ),
 
@@ -154,33 +172,12 @@ class _HomePageState extends State<HomePage> {
               ),
 
               decoration:
-                  InputDecoration(
-
-                filled: true,
-
-                fillColor:
-                    const Color(
-                        0xFF1E1E1E),
-
+                  const InputDecoration(
                 labelText: 'Mês',
-
-                labelStyle:
-                    const TextStyle(
-                  color:
-                      Colors.white70,
-                ),
-
-                border:
-                    OutlineInputBorder(
-
-                  borderRadius:
-                      BorderRadius.circular(
-                          15),
-                ),
               ),
             ),
 
-            const SizedBox(height: 15),
+            const SizedBox(height: 10),
 
             TextField(
 
@@ -196,34 +193,13 @@ class _HomePageState extends State<HomePage> {
               ),
 
               decoration:
-                  InputDecoration(
-
-                filled: true,
-
-                fillColor:
-                    const Color(
-                        0xFF1E1E1E),
-
+                  const InputDecoration(
                 labelText:
                     'kWh Consumido',
-
-                labelStyle:
-                    const TextStyle(
-                  color:
-                      Colors.white70,
-                ),
-
-                border:
-                    OutlineInputBorder(
-
-                  borderRadius:
-                      BorderRadius.circular(
-                          15),
-                ),
               ),
             ),
 
-            const SizedBox(height: 15),
+            const SizedBox(height: 10),
 
             TextField(
 
@@ -239,30 +215,9 @@ class _HomePageState extends State<HomePage> {
               ),
 
               decoration:
-                  InputDecoration(
-
-                filled: true,
-
-                fillColor:
-                    const Color(
-                        0xFF1E1E1E),
-
+                  const InputDecoration(
                 labelText:
                     'Valor (R\$)',
-
-                labelStyle:
-                    const TextStyle(
-                  color:
-                      Colors.white70,
-                ),
-
-                border:
-                    OutlineInputBorder(
-
-                  borderRadius:
-                      BorderRadius.circular(
-                          15),
-                ),
               ),
             ),
 
@@ -274,24 +229,18 @@ class _HomePageState extends State<HomePage> {
 
               child: ElevatedButton(
 
-                style:
-                    ElevatedButton
-                        .styleFrom(
-
-                  backgroundColor:
-                      Colors.green,
-
-                  padding:
-                      const EdgeInsets
-                          .all(18),
-                ),
-
                 onPressed:
                     adicionarCarga,
 
-                child: const Text(
-                  'Salvar',
+                style:
+                    ElevatedButton
+                        .styleFrom(
+                  backgroundColor:
+                      Colors.green,
                 ),
+
+                child:
+                    const Text('Salvar'),
               ),
             ),
 
@@ -300,40 +249,39 @@ class _HomePageState extends State<HomePage> {
             Expanded(
 
               child:
-                  cargas.isEmpty
+                  ListView.builder(
 
-                      ? const Center(
+                itemCount:
+                    cargas.length,
 
-                          child: Text(
+                itemBuilder:
+                    (context, index) {
 
-                            'Nenhuma carga cadastrada.',
+                  final carga =
+                      cargas[index];
 
-                            style: TextStyle(
-                              color:
-                                  Colors
-                                      .white54,
+                  return Dismissible(
 
-                              fontSize: 16,
-                            ),
-                          ),
-                        )
+                    key: Key(
+                        carga.id.toString()),
 
-                      : ListView.builder(
+                    background:
+                        Container(
+                      color: Colors.red,
+                    ),
 
-                          itemCount:
-                              cargas.length,
+                    onDismissed: (_) {
 
-                          itemBuilder:
-                              (context,
-                                  index) {
+                      excluirCarga(
+                          carga.id!);
+                    },
 
-                            return CargaCard(
-                              carga:
-                                  cargas[
-                                      index],
-                            );
-                          },
-                        ),
+                    child: CargaCard(
+                      carga: carga,
+                    ),
+                  );
+                },
+              ),
             ),
           ],
         ),
