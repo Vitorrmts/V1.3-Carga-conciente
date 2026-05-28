@@ -18,7 +18,9 @@ class DatabaseHelper {
       return _database!;
     }
 
-    _database = await _initDB('cargas.db');
+    _database = await _initDB(
+      'cargas.db',
+    );
 
     return _database!;
   }
@@ -48,19 +50,26 @@ class DatabaseHelper {
   ) async {
 
     await db.execute('''
+
 CREATE TABLE cargas(
+
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+
   mes TEXT,
+
   kwh REAL,
+
   valor REAL
 )
+
 ''');
   }
 
   Future<int> insertCarga(
       Carga carga) async {
 
-    final db = await instance.database;
+    final db =
+        await instance.database;
 
     return await db.insert(
       'cargas',
@@ -70,34 +79,51 @@ CREATE TABLE cargas(
 
   Future<List<Carga>> getCargas() async {
 
-    final db = await instance.database;
+    final db =
+        await instance.database;
 
     final result =
         await db.query('cargas');
 
     return result
-        .map((json) =>
-            Carga.fromMap(json))
+        .map(
+          (json) =>
+              Carga.fromMap(json),
+        )
         .toList();
+  }
+
+  Future<int> updateCarga(
+      Carga carga) async {
+
+    final db =
+        await instance.database;
+
+    return await db.update(
+
+      'cargas',
+
+      carga.toMap(),
+
+      where: 'id = ?',
+
+      whereArgs: [carga.id],
+    );
   }
 
   Future<int> deleteCarga(
       int id) async {
 
-    final db = await instance.database;
-
-    return await db.delete(
-      'cargas',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
-
-  Future close() async {
-
     final db =
         await instance.database;
 
-    db.close();
+    return await db.delete(
+
+      'cargas',
+
+      where: 'id = ?',
+
+      whereArgs: [id],
+    );
   }
 }
